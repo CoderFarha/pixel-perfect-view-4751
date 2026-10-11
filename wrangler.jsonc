@@ -17,5 +17,9 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "vars": {
+    "VITE_SUPABASE_URL": "https://pvpkbpeismsyiioefvrt.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2cGticGVpc21zeWlpb2VmdnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyMTg2NDIsImV4cCI6MjEwNjc5NDY0Mn0.Jxt3CLEefalkm2uDcVMZITsz4kFsAK9gc4t3M1mMpng"
   }
 }
