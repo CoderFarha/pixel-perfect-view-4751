@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { logError } from "@/lib/logger";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallbackPage,
@@ -42,7 +43,7 @@ function AuthCallbackPage() {
 
         navigate({ to: "/login", replace: true });
       } catch (error) {
-        console.error("Auth callback failed:", error);
+        logError("auth.callback_failed", error);
 
         if (isActive) {
           setStatus("We could not validate your sign-in. Returning to login.");

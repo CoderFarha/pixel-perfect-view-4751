@@ -6,6 +6,7 @@
 import { createHash } from "node:crypto";
 
 import { VisionResultSchema, type VisionResult } from "./types/vision.types.ts";
+import { logInfo, logWarning } from "../../lib/logger.ts";
 
 export class VisionValidationError extends Error {
   constructor(message: string) {
@@ -430,7 +431,17 @@ export class VisionService implements IVisionService {
         };
 
         if (payload.usage) {
-          console.info("DeepSeek token usage", payload.usage);
+          logInfo("vision.provider_usage", {
+            ...(payload.usage.prompt_tokens !== undefined
+              ? { promptTokens: payload.usage.prompt_tokens }
+              : {}),
+            ...(payload.usage.completion_tokens !== undefined
+              ? { completionTokens: payload.usage.completion_tokens }
+              : {}),
+            ...(payload.usage.total_tokens !== undefined
+              ? { totalTokens: payload.usage.total_tokens }
+              : {}),
+          });
         }
 
         const content = payload.choices?.[0]?.message?.content ?? "{}";
@@ -463,9 +474,7 @@ export class VisionService implements IVisionService {
     }
 
     const fallback = buildMockResultForUrl(imageUrl);
-    if (lastError instanceof Error) {
-      console.warn("DeepSeek vision request failed; using mock fallback.", lastError.message);
-    }
+    if (lastError) logWarning("vision.provider_failed_using_mock_fallback");
     return fallback;
   }
 }

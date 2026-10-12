@@ -1,5 +1,6 @@
 import { fail } from "../api/respond.ts";
 import { getSupabaseServerClient } from "../supabase/server.ts";
+import { logError } from "../logger.ts";
 
 export type SessionContext = { userId: string; tenantId: string; email: string };
 
@@ -33,7 +34,8 @@ export function createRequireSession(verifyToken: TokenVerifier) {
     let user: VerifiedUser | null;
     try {
       user = await verifyToken(match[1]);
-    } catch {
+    } catch (error) {
+      logError("auth.session_verification_unavailable", error);
       throw fail("AUTH_UNAVAILABLE", "Authentication could not be verified.", 503);
     }
 

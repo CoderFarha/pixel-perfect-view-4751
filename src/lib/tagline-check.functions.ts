@@ -1,21 +1,29 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { requireSession } from "./auth/require-session";
+import { logError } from "./logger";
+
+const checkTaglineInput = z
+  .object({
+    canonical: z.string().trim().min(3).max(300),
+    copy: z.string().trim().min(3).max(20000),
+  })
+  .strict();
 
 export const checkTagline = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
-    z.object({ canonical: z.string().min(3).max(300), copy: z.string().min(3).max(20000) }).parse(d),
-  )
+  .validator((data: unknown) => checkTaglineInput.parse(data))
   .handler(async ({ data }) => {
-    const { runTaglineCheck } = await import("./tagline-check.server");
     try {
+      await requireSession(getRequest());
+      const { runTaglineCheck } = await import("./tagline-check.server");
       return { ok: true as const, ...(await runTaglineCheck(data.canonical, data.copy)) };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Check failed";
-      const friendly = /402|credit/i.test(msg)
-        ? "AI credits are used up. Add credits in your workspace to continue."
-        : /429|rate/i.test(msg)
-          ? "Too many requests right now. Please try again in a minute."
-          : msg;
-      return { ok: false as const, error: friendly };
+    } catch (error) {
+      if (error instanceof Response) throw error;
+      logError("tagline.check_failed", error);
+      return {
+        ok: false as const,
+        error: "We couldn't check that copy just now. Please try again in a moment.",
+      };
     }
   });

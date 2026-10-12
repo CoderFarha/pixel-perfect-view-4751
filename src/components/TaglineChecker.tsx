@@ -3,6 +3,7 @@ import { Sparkles, Copy } from "lucide-react";
 import { Card, Button } from "@/components/kit";
 import { checkTagline } from "@/lib/tagline-check.functions";
 import type { TaglineResult } from "@/lib/tagline-check.server";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 export function TaglineChecker({ defaultTagline = "From China to the world" }: { defaultTagline?: string }) {
   const [canonical, setCanonical] = useState(defaultTagline);
@@ -16,11 +17,19 @@ export function TaglineChecker({ defaultTagline = "From China to the world" }: {
     setError(null);
     setResult(null);
     try {
-      const r = await checkTagline({ data: { canonical, copy } });
+      const { data, error: sessionError } = await getSupabaseClient().auth.getSession();
+      if (sessionError || !data.session) {
+        setError("Please sign in again to use the brand copy checker.");
+        return;
+      }
+      const r = await checkTagline({
+        data: { canonical, copy },
+        headers: { authorization: `Bearer ${data.session.access_token}` },
+      });
       if (r.ok) setResult({ summary: r.summary, issues: r.issues });
       else setError(r.error);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Check failed");
+    } catch {
+      setError("We couldn't check that copy just now. Please try again in a moment.");
     } finally {
       setBusy(false);
     }
