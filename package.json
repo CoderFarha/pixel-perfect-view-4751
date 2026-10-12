@@ -8,6 +8,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "nitro preview",
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
+    "test:watch": "node --test --watch --experimental-strip-types \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
