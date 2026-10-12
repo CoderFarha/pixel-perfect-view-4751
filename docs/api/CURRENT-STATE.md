@@ -5,9 +5,9 @@ Scope: repository inspection for Phase A. This document records the code in this
 
 ## Executive Summary
 
-The checked-in app is not yet backed by resource APIs. The main business screens are seeded from static exports in `src/lib/demo-data.ts`; CRUD-style changes are persisted in the current browser's `localStorage` by `usePersistentList`. Supabase is used for browser-side magic-link authentication and session checks only. The sole TanStack server function is an unauthenticated AI tagline check. No API route directory, server-side session/tenant guard, Supabase data query, webhook, or payment-provider integration was found.
+The checked-in app is not yet backed by resource APIs. The main business screens are seeded from static exports in `src/lib/demo-data.ts`; CRUD-style changes are persisted in the current browser's `localStorage` by `usePersistentList`. Supabase is used for browser-side magic-link authentication and session checks. A server-side bearer-token/tenant guard and API response helpers now exist, but no API route consumes them. The sole TanStack server function is an unauthenticated AI tagline check. No Supabase business-table query, webhook, or payment-provider integration was found.
 
-The repository instructions describe this same state: no backend and static demo data. No `docs/AUDIT.md` was present. The supplied prompt's claims about production tenant tables, RLS, and `app_metadata.tenant_id` could not be verified from this checkout.
+The repository instructions describe the product as static/demo-first and say there is no backend or authentication, which is now incomplete: browser auth and an unconnected server auth helper are present. No `docs/AUDIT.md` was present. The supplied prompt's claims about production tenant tables and RLS could not be verified from this checkout.
 
 ## A1. Authentication Flow
 
@@ -21,6 +21,7 @@ The repository instructions describe this same state: no backend and static demo
 | `getUser()` | [`src/lib/auth.ts`](../../src/lib/auth.ts#L43) | No caller found. | Returns Supabase user from `auth.getUser`; client-side only. |
 | `signOut()` | [`src/lib/auth.ts`](../../src/lib/auth.ts#L25) | No caller found. | Calls Supabase `auth.signOut`; no current UI path invokes it. |
 | Session gate | [`src/routes/app.tsx`](../../src/routes/app.tsx#L116) | `/app` layout wraps app routes | Browser effect checks for a session; missing/error redirects to `/login`. It does not verify a tenant claim or protect API/data access on a server. |
+| API session/tenant guard | [`src/lib/auth/require-session.ts`](../../src/lib/auth/require-session.ts#L11) | Referenced only by its unit tests; no route/API caller found. | Reads a Bearer token, verifies it through Supabase Auth's `/auth/v1/user` endpoint, and requires `app_metadata.tenant_id`. It returns `{ userId, tenantId }`; this helper is not itself a route or database authorization policy. |
 
 ```mermaid
 sequenceDiagram
@@ -41,7 +42,7 @@ sequenceDiagram
     Supabase-->>App: Session presence check
 ```
 
-The client is configured with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in [`src/lib/supabase/client.ts`](../../src/lib/supabase/client.ts). Session persistence, refresh, and URL detection are enabled in the Supabase JS client. No server-side auth helper or service/admin client exists in `src/lib/supabase`.
+The browser client is configured with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in [`src/lib/supabase/client.ts`](../../src/lib/supabase/client.ts); these are public client settings, not a service-role credential. Session persistence, refresh, and URL detection are enabled in the Supabase JS client. The separate `requireSession` helper reads server environment variables (falling back to the Vite-prefixed values) to call Supabase Auth's user endpoint. No Supabase service/admin client exists in `src/lib/supabase`.
 
 ## A2. Data Operations Inventory
 
@@ -97,7 +98,7 @@ Other forms use `PaymentForm` or `CrudPage`; no sourcing-specific intake route o
 
 | Service | Observed use | Credentials / data flow | Status |
 |---|---|---|---|
-| Supabase Auth | Magic-link request, code exchange, session check; browser SDK only | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`; email and auth code/session | Live code path when configured. No Supabase table query, storage upload, edge-function invocation, admin client, RLS query, or webhook found. |
+| Supabase Auth | Magic-link request, code exchange, browser session checks, and the unconnected `requireSession` bearer-token verifier | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`; email and auth code/session/token | Auth code path is present. No Supabase business-table query, storage upload, edge-function invocation, service/admin client, RLS policy source, or webhook found in this checkout. |
 | Lovable AI gateway | Tagline consistency checker | `LOVABLE_API_KEY` server environment variable; sends canonical tagline and submitted copy to `https://ai.gateway.lovable.dev/v1` | Called by `TaglineChecker` through the only `createServerFn` found. Function validates input but has no session/tenant authorization. |
 | DeepSeek API | Product image vision service | `DEEPSEEK_API_KEY`, optional `DEEPSEEK_API_URL`; sends image URL in a chat-completion request | `VisionService` supports API call and mock fallback if key absent; source search found tests but no app call site. Treat as implemented library code, not currently wired product integration. |
 | WhatsApp | Opens `wa.me` share URL from shipment/partner workflow | Message passed as encoded URL text; no authenticated API or delivery receipt | User-initiated link-out only. |
@@ -110,7 +111,7 @@ Priorities are relative to the product workflow, not estimates of deployment rea
 
 | Operation / surface needed | Needed by | Priority | Complexity |
 |---|---|---:|---:|
-| Server-side session verification and tenant context (`requireSession` equivalent) | Every protected API and tenant-owned record | P0 | M |
+| Wire the existing server-side session verification and tenant context helper into protected server routes | Every protected API and tenant-owned record | P0 | S-M |
 | Persistent clients: create/list/detail/update/delete, tenant-scoped | Client management, sourcing and orders | P0 | M |
 | Persistent sourcing requests: create/list/detail/update/soft-delete, code generation, client linkage | Intake and sourcing pipeline | P0 | M-L |
 | Order records and lifecycle/status transitions, including FX lock and audit history | Orders, dashboard, shipment tracking | P1 | L |
@@ -120,7 +121,7 @@ Priorities are relative to the product workflow, not estimates of deployment rea
 | Tenant-owned suppliers, agents, logistics partners, conversations/inbox | Partner and communication screens | P1 | L |
 | Recurring payment schedules, FX settings, and user preferences | Payments, FX, settings | P2 | M |
 | Client portal token issuance, lookup, expiry/revocation, and scoped reads (remove demo fallback) | `portal.$token` | P1 | M-L |
-| Health endpoint, API error envelope, pagination/filter schemas, idempotency strategy | Operations and clients of resource APIs | P2 | M |
+| Health endpoint, pagination/filter schemas, idempotency strategy, and route-level use of the existing API response/error helpers | Operations and clients of resource APIs | P2 | M |
 | Schema/database alignment, migrations, tenant foreign keys/indexes, authorization policy verification | All persistent operations | P0 | L |
 
 ### Current schema boundary
@@ -132,5 +133,6 @@ Priorities are relative to the product workflow, not estimates of deployment rea
 - This is a source checkout audit only. No production URL, Supabase dashboard, Cloudflare environment, database, or deployed RLS policies were queried.
 - `src/server.ts` adapts the TanStack Start handler for deployment; it does not itself define resource API endpoints.
 - `src/services/intelligence` includes domain/service logic and unit tests, but only the tagline checker has a discovered app caller. Do not assume every intelligence module is exposed to users or persists data.
-- Package scripts include `build`, `typecheck`, and `lint`; there is no `test` script. Tests in the repository are not evidence of endpoint/integration tests.
+- Package scripts include Node built-in `test` and `test:watch` commands as well as `build`, `typecheck`, and `lint`. Unit tests cover response helpers, basic validation, session-guard behavior, and intelligence services; no endpoint, database, RLS, storage-policy, or form integration tests were found.
+- The supplied audit narrative mentions `ScreenshotUploader.tsx` and `src/routes/app.sourcing.new.tsx`; neither file exists in this `upstream/main` checkout, so those flows are not included as current implementation here.
 - No code, schema, or test changes are part of this Phase A report.
