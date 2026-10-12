@@ -21,10 +21,10 @@ function ClientPortalPage() {
   const [tab, setTab] = useState<"Overview" | "Orders" | "Payments">("Orders");
   const [expandedOrderCode, setExpandedOrderCode] = useState<string | null>(null);
   const orderCollection = usePersistentList<Order>("orders", orders);
-  const client =
-    clients.find(
-      (item) => item.id === token || item.name.toLowerCase().replaceAll(" ", "-") === token,
-    ) ?? clients[0];
+  // Never fall back to a default client — that would leak data to unauthorized visitors.
+  const client = clients.find(
+    (item) => item.id === token || item.name.toLowerCase().replaceAll(" ", "-") === token,
+  );
   const visiblePayments = payments.filter(
     (payment) => payment.direction === "IN" && payment.counterparty === client?.name,
   );
@@ -32,8 +32,9 @@ function ClientPortalPage() {
 
   if (!client)
     return (
-      <main className="mx-auto max-w-xl px-4 py-16 text-center text-fg-muted">
-        This client link is no longer available.
+      <main className="mx-auto max-w-xl px-4 py-16 text-center text-fg-muted" role="alert">
+        <h1 className="text-2xl font-bold text-fg">404 — Client portal not found</h1>
+        <p className="mt-2">This client link is no longer available.</p>
       </main>
     );
 

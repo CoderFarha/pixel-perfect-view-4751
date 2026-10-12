@@ -1,8 +1,9 @@
 import { fail } from "../api/respond.ts";
+import { getSupabaseServerClient } from "../supabase/server.ts";
 
-export type SessionContext = { userId: string; tenantId: string };
+export type SessionContext = { userId: string; tenantId: string; email: string };
 
-type VerifiedUser = { id: string; app_metadata?: unknown };
+type VerifiedUser = { id: string; app_metadata?: unknown; email?: string };
 type TokenVerifier = (accessToken: string) => Promise<VerifiedUser | null>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -10,18 +11,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 async function verifySupabaseAccessToken(accessToken: string): Promise<VerifiedUser | null> {
-  const supabaseUrl = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
-  const supabaseKey = process.env["SUPABASE_ANON_KEY"] ?? process.env["VITE_SUPABASE_ANON_KEY"];
-  if (!supabaseUrl || !supabaseKey) throw new Error("Supabase auth is not configured.");
-
-  const response = await fetch(new URL("/auth/v1/user", supabaseUrl), {
-    headers: { apikey: supabaseKey, authorization: `Bearer ${accessToken}` },
+  const request = new Request("https://tradehub.invalid", {
+    headers: { authorization: `Bearer ${accessToken}` },
   });
-  if (!response.ok) return null;
+  const { data, error } = await getSupabaseServerClient(request).auth.getUser();
 
-  const payload: unknown = await response.json();
-  if (!isRecord(payload) || typeof payload["id"] !== "string") return null;
-  return { id: payload["id"], app_metadata: payload["app_metadata"] };
+  if (error || !data.user) return null;
+  return {
+    id: data.user.id,
+    app_metadata: data.user.app_metadata,
+    ...(data.user.email ? { email: data.user.email } : {}),
+  };
 }
 
 export function createRequireSession(verifyToken: TokenVerifier) {
@@ -45,7 +45,7 @@ export function createRequireSession(verifyToken: TokenVerifier) {
       throw fail("NO_TENANT", "The authenticated user is not assigned to a tenant.", 403);
     }
 
-    return { userId: user.id, tenantId };
+    return { userId: user.id, tenantId, email: user.email ?? "" };
   };
 }
 
