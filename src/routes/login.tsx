@@ -6,6 +6,14 @@ import { signInWithMagicLink } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
+const adminWhatsAppNumber = (import.meta.env["VITE_ADMIN_WHATSAPP_NUMBER"] ?? "").replace(
+  /\D/g,
+  "",
+);
+const registrationHref = adminWhatsAppNumber
+  ? `https://wa.me/${adminWhatsAppNumber}?text=${encodeURIComponent("Hi TradeHub admin, I would like to register for TradeHub.")}`
+  : null;
+
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
@@ -92,6 +100,24 @@ function LoginPage() {
             {isSubmitting ? "Sending link..." : "Send magic link"}
           </Button>
         </form>
+
+        <div className="mt-5 border-t border-border pt-4 text-center">
+          <p className="text-sm text-fg-muted">New to TradeHub?</p>
+          {registrationHref ? (
+            <a
+              className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-accent/40 px-4 text-sm font-semibold text-accent transition-colors hover:bg-accent/10"
+              href={registrationHref}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Contact admin to register on WhatsApp
+            </a>
+          ) : (
+            <p className="mt-2 text-xs text-warning">
+              Registration contact is not configured. Please contact your administrator.
+            </p>
+          )}
+        </div>
 
         <p className="mt-5 text-center text-sm text-fg-muted">
           Need a different workspace?{" "}
