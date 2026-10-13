@@ -63,5 +63,6 @@ test("valid tenant session returns user and tenant context", async () => {
   assert.deepEqual(await requireSession(request(headers)), {
     userId: "user-1",
     tenantId: "tenant-1",
+    email: "",
   });
 });

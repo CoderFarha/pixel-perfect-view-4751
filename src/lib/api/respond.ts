@@ -1,4 +1,5 @@
 import { ZodError } from "zod";
+import { logError, logWarning } from "../logger.ts";
 
 type ErrorDetails = readonly {
   code: string;
@@ -30,7 +31,7 @@ export function handleError(error: unknown, context = "api"): Response {
   if (error instanceof Response) return error;
 
   if (error instanceof ZodError) {
-    console.warn(`[${context}]`, "Request validation failed");
+    logWarning(`${context}.validation_failed`);
     const details = error.issues.map((issue) => ({
       code: issue.code,
       message: issue.message,
@@ -39,6 +40,6 @@ export function handleError(error: unknown, context = "api"): Response {
     return fail("VALIDATION", "Request validation failed.", 400, details);
   }
 
-  console.error(`[${context}]`, error instanceof Error ? error.name : "Unknown error");
+  logError(`${context}.unexpected_error`, error);
   return fail("INTERNAL", "An unexpected error occurred.", 500);
 }

@@ -40,6 +40,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { clients, usd, type Client } from "@/lib/demo-data";
 import { usePersistentList } from "@/lib/use-persistent-list";
 import { toast } from "sonner";
+import { logError } from "@/lib/logger";
 
 export const Route = createFileRoute("/app/clients")({
   head: () => ({
@@ -149,7 +150,7 @@ function ClientsPage() {
       }
       setDialogOpen(false);
     } catch (error) {
-      console.error("Unable to save client changes.", error);
+      logError("clients.save_failed", error);
       toast.error("Couldn't save this client. Check browser storage and try again.");
     }
   };
@@ -160,7 +161,7 @@ function ClientsPage() {
       setConfirmDelete(null);
       toast.success(`${client.name} removed.`);
     } catch (error) {
-      console.error("Unable to remove client.", error);
+      logError("clients.remove_failed", error);
       toast.error("Couldn't remove this client. Check browser storage and try again.");
     }
   };
