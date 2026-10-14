@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./database.types.ts";
 
 export function getSupabaseServerClient(request: Request) {
   const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
@@ -10,7 +11,7 @@ export function getSupabaseServerClient(request: Request) {
 
   const authorization = request.headers.get("authorization");
 
-  return createClient(url, key, {
+  return createClient<Database>(url, key, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

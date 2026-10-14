@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiSourcingRouteImport } from './routes/api/sourcing'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAgentsRouteImport } from './routes/app.agents'
 import { Route as AppBrandRouteImport } from './routes/app.brand'
@@ -28,6 +29,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as PortalTokenRouteImport } from './routes/portal.$token'
+import { Route as ApiSourcingIdRouteImport } from './routes/api/sourcing/$id'
 import { Route as AppOrdersIndexRouteImport } from './routes/app.orders.index'
 import { Route as AppOrdersIdRouteImport } from './routes/app.orders.$id'
 import { Route as AppPaymentsIndexRouteImport } from './routes/app.payments.index'
@@ -57,6 +59,11 @@ const LoginRoute = LoginRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSourcingRoute = ApiSourcingRouteImport.update({
+  id: '/api/sourcing',
+  path: '/api/sourcing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -134,6 +141,11 @@ const PortalTokenRoute = PortalTokenRouteImport.update({
   path: '/portal/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSourcingIdRoute = ApiSourcingIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiSourcingRoute,
+} as any)
 const AppOrdersIndexRoute = AppOrdersIndexRouteImport.update({
   id: '/orders/',
   path: '/orders/',
@@ -190,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/sourcing': typeof ApiSourcingRouteWithChildren
   '/app/agents': typeof AppAgentsRoute
   '/app/brand': typeof AppBrandRoute
   '/app/clients': typeof AppClientsRoute
@@ -205,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/portal/$token': typeof PortalTokenRoute
   '/app/': typeof AppIndexRoute
+  '/api/sourcing/$id': typeof ApiSourcingIdRoute
   '/app/orders/$id': typeof AppOrdersIdRoute
   '/app/payments/$id': typeof AppPaymentsIdRoute
   '/app/payments/commissions': typeof AppPaymentsCommissionsRoute
@@ -220,6 +234,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/sourcing': typeof ApiSourcingRouteWithChildren
   '/app/agents': typeof AppAgentsRoute
   '/app/brand': typeof AppBrandRoute
   '/app/clients': typeof AppClientsRoute
@@ -234,6 +249,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/portal/$token': typeof PortalTokenRoute
   '/app': typeof AppIndexRoute
+  '/api/sourcing/$id': typeof ApiSourcingIdRoute
   '/app/orders/$id': typeof AppOrdersIdRoute
   '/app/payments/$id': typeof AppPaymentsIdRoute
   '/app/payments/commissions': typeof AppPaymentsCommissionsRoute
@@ -251,6 +267,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/sourcing': typeof ApiSourcingRouteWithChildren
   '/app/agents': typeof AppAgentsRoute
   '/app/brand': typeof AppBrandRoute
   '/app/clients': typeof AppClientsRoute
@@ -266,6 +283,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/portal/$token': typeof PortalTokenRoute
   '/app/': typeof AppIndexRoute
+  '/api/sourcing/$id': typeof ApiSourcingIdRoute
   '/app/orders/$id': typeof AppOrdersIdRoute
   '/app/payments/$id': typeof AppPaymentsIdRoute
   '/app/payments/commissions': typeof AppPaymentsCommissionsRoute
@@ -284,6 +302,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/api/health'
+    | '/api/sourcing'
     | '/app/agents'
     | '/app/brand'
     | '/app/clients'
@@ -299,6 +318,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/portal/$token'
     | '/app/'
+    | '/api/sourcing/$id'
     | '/app/orders/$id'
     | '/app/payments/$id'
     | '/app/payments/commissions'
@@ -314,6 +334,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/api/health'
+    | '/api/sourcing'
     | '/app/agents'
     | '/app/brand'
     | '/app/clients'
@@ -328,6 +349,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/portal/$token'
     | '/app'
+    | '/api/sourcing/$id'
     | '/app/orders/$id'
     | '/app/payments/$id'
     | '/app/payments/commissions'
@@ -344,6 +366,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/api/health'
+    | '/api/sourcing'
     | '/app/agents'
     | '/app/brand'
     | '/app/clients'
@@ -359,6 +382,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/portal/$token'
     | '/app/'
+    | '/api/sourcing/$id'
     | '/app/orders/$id'
     | '/app/payments/$id'
     | '/app/payments/commissions'
@@ -376,6 +400,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiSourcingRoute: typeof ApiSourcingRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   PortalTokenRoute: typeof PortalTokenRoute
 }
@@ -408,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sourcing': {
+      id: '/api/sourcing'
+      path: '/api/sourcing'
+      fullPath: '/api/sourcing'
+      preLoaderRoute: typeof ApiSourcingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -514,6 +546,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/$token'
       preLoaderRoute: typeof PortalTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/sourcing/$id': {
+      id: '/api/sourcing/$id'
+      path: '/$id'
+      fullPath: '/api/sourcing/$id'
+      preLoaderRoute: typeof ApiSourcingIdRouteImport
+      parentRoute: typeof ApiSourcingRoute
     }
     '/app/orders/': {
       id: '/app/orders/'
@@ -652,11 +691,24 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface ApiSourcingRouteChildren {
+  ApiSourcingIdRoute: typeof ApiSourcingIdRoute
+}
+
+const ApiSourcingRouteChildren: ApiSourcingRouteChildren = {
+  ApiSourcingIdRoute: ApiSourcingIdRoute,
+}
+
+const ApiSourcingRouteWithChildren = ApiSourcingRoute._addFileChildren(
+  ApiSourcingRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiSourcingRoute: ApiSourcingRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   PortalTokenRoute: PortalTokenRoute,
 }
