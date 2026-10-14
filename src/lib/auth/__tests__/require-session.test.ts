@@ -23,24 +23,35 @@ test("missing authorization header returns 401", async () => {
   assert.equal(response.status, 401);
 });
 
+test("malformed authorization token returns 401", async () => {
+  const requireSession = createRequireSession(async () => null);
+  const response = await responseFrom(
+    requireSession(request(new Headers({ authorization: "Bearer" }))),
+  );
+  assert.equal(response.status, 401);
+});
+
 test("invalid access token returns 401", async () => {
   const requireSession = createRequireSession(async () => null);
   const response = await responseFrom(
-    requireSession(request(new Headers({ authorization: "Bearer invalid-token" }))),
+    requireSession(request(new Headers({ authorization: "Bearer invalid-test-token" }))),
   );
   assert.equal(response.status, 401);
 });
 
 test("valid user without tenant metadata returns 403", async () => {
-  const requireSession = createRequireSession(async () => ({ id: "user-1", app_metadata: {} }));
+  const requireSession = createRequireSession(async () => ({
+    id: "test-user-1",
+    app_metadata: {},
+  }));
   const response = await responseFrom(
-    requireSession(request(new Headers({ authorization: "Bearer valid-token" }))),
+    requireSession(request(new Headers({ authorization: "Bearer valid-test-token" }))),
   );
   assert.equal(response.status, 403);
 });
 
 test("valid tenant session returns user and tenant context", async () => {
-  const headers = mockSession("tenant-1", "user-1");
+  const headers = mockSession("test-tenant-1", "test-user-1");
   const requireSession = createRequireSession(async (token) => {
     const encodedPayload = token.startsWith("test-session.") ? token.slice(13) : "";
     const payload: unknown = JSON.parse(atob(encodedPayload));
@@ -57,12 +68,13 @@ test("valid tenant session returns user and tenant context", async () => {
     return {
       id: String(payload.userId),
       app_metadata: { tenant_id: String(payload.tenantId) },
+      email: "test-user@example.test",
     };
   });
 
   assert.deepEqual(await requireSession(request(headers)), {
-    userId: "user-1",
-    tenantId: "tenant-1",
-    email: "",
+    userId: "test-user-1",
+    tenantId: "test-tenant-1",
+    email: "test-user@example.test",
   });
 });
