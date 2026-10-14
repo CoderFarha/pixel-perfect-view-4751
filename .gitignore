@@ -12,6 +12,7 @@ bun.lock
 bunfig.toml
 .env
 .env.*
+!.env.example
 .env.local
 .env.*.local
 
