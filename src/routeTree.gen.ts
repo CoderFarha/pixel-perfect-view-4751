@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAgentsRouteImport } from './routes/app.agents'
 import { Route as AppBrandRouteImport } from './routes/app.brand'
@@ -51,6 +52,11 @@ const AppRoute = AppRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/api/health': typeof ApiHealthRoute
   '/app/agents': typeof AppAgentsRoute
   '/app/brand': typeof AppBrandRoute
   '/app/clients': typeof AppClientsRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/api/health': typeof ApiHealthRoute
   '/app/agents': typeof AppAgentsRoute
   '/app/brand': typeof AppBrandRoute
   '/app/clients': typeof AppClientsRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/api/health': typeof ApiHealthRoute
   '/app/agents': typeof AppAgentsRoute
   '/app/brand': typeof AppBrandRoute
   '/app/clients': typeof AppClientsRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/api/health'
     | '/app/agents'
     | '/app/brand'
     | '/app/clients'
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/api/health'
     | '/app/agents'
     | '/app/brand'
     | '/app/clients'
@@ -332,6 +343,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/api/health'
     | '/app/agents'
     | '/app/brand'
     | '/app/clients'
@@ -363,6 +375,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   PortalTokenRoute: typeof PortalTokenRoute
 }
@@ -388,6 +401,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -636,6 +656,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiHealthRoute: ApiHealthRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   PortalTokenRoute: PortalTokenRoute,
 }
