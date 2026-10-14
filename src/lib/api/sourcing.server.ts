@@ -328,8 +328,10 @@ export function createSourcingRepository(
         .select("id")
         .single();
       if (error) {
-        const existingClient = await this.findClientByPhone(tenantId, client.phone);
-        if (existingClient) return { ...existingClient, wasNew: false };
+        if (error.code === "23505") {
+          const existingClient = await this.findClientByPhone(tenantId, client.phone);
+          if (existingClient) return { ...existingClient, wasNew: false };
+        }
         throw error;
       }
       const createdClient = z.object({ id: z.string().uuid() }).strict().parse(data);

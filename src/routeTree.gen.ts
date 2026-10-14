@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ApiClientsRouteImport } from './routes/api/clients'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiSourcingRouteImport } from './routes/api/sourcing'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -29,7 +30,9 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as PortalTokenRouteImport } from './routes/portal.$token'
+import { Route as ApiClientsIdRouteImport } from './routes/api/clients/$id'
 import { Route as ApiSourcingIdRouteImport } from './routes/api/sourcing/$id'
+import { Route as ApiUploadPresignedRouteImport } from './routes/api/upload/presigned'
 import { Route as AppOrdersIndexRouteImport } from './routes/app.orders.index'
 import { Route as AppOrdersIdRouteImport } from './routes/app.orders.$id'
 import { Route as AppPaymentsIndexRouteImport } from './routes/app.payments.index'
@@ -54,6 +57,11 @@ const AppRoute = AppRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClientsRoute = ApiClientsRouteImport.update({
+  id: '/api/clients',
+  path: '/api/clients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -141,10 +149,20 @@ const PortalTokenRoute = PortalTokenRouteImport.update({
   path: '/portal/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientsIdRoute = ApiClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiClientsRoute,
+} as any)
 const ApiSourcingIdRoute = ApiSourcingIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ApiSourcingRoute,
+} as any)
+const ApiUploadPresignedRoute = ApiUploadPresignedRouteImport.update({
+  id: '/api/upload/presigned',
+  path: '/api/upload/presigned',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppOrdersIndexRoute = AppOrdersIndexRouteImport.update({
   id: '/orders/',
@@ -201,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/api/clients': typeof ApiClientsRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/sourcing': typeof ApiSourcingRouteWithChildren
   '/app/agents': typeof AppAgentsRoute
@@ -218,7 +237,9 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/portal/$token': typeof PortalTokenRoute
   '/app/': typeof AppIndexRoute
+  '/api/clients/$id': typeof ApiClientsIdRoute
   '/api/sourcing/$id': typeof ApiSourcingIdRoute
+  '/api/upload/presigned': typeof ApiUploadPresignedRoute
   '/app/orders/$id': typeof AppOrdersIdRoute
   '/app/payments/$id': typeof AppPaymentsIdRoute
   '/app/payments/commissions': typeof AppPaymentsCommissionsRoute
@@ -233,6 +254,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/api/clients': typeof ApiClientsRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/sourcing': typeof ApiSourcingRouteWithChildren
   '/app/agents': typeof AppAgentsRoute
@@ -249,7 +271,9 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/portal/$token': typeof PortalTokenRoute
   '/app': typeof AppIndexRoute
+  '/api/clients/$id': typeof ApiClientsIdRoute
   '/api/sourcing/$id': typeof ApiSourcingIdRoute
+  '/api/upload/presigned': typeof ApiUploadPresignedRoute
   '/app/orders/$id': typeof AppOrdersIdRoute
   '/app/payments/$id': typeof AppPaymentsIdRoute
   '/app/payments/commissions': typeof AppPaymentsCommissionsRoute
@@ -266,6 +290,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/api/clients': typeof ApiClientsRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/sourcing': typeof ApiSourcingRouteWithChildren
   '/app/agents': typeof AppAgentsRoute
@@ -283,7 +308,9 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/portal/$token': typeof PortalTokenRoute
   '/app/': typeof AppIndexRoute
+  '/api/clients/$id': typeof ApiClientsIdRoute
   '/api/sourcing/$id': typeof ApiSourcingIdRoute
+  '/api/upload/presigned': typeof ApiUploadPresignedRoute
   '/app/orders/$id': typeof AppOrdersIdRoute
   '/app/payments/$id': typeof AppPaymentsIdRoute
   '/app/payments/commissions': typeof AppPaymentsCommissionsRoute
@@ -301,6 +328,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/api/clients'
     | '/api/health'
     | '/api/sourcing'
     | '/app/agents'
@@ -318,7 +346,9 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/portal/$token'
     | '/app/'
+    | '/api/clients/$id'
     | '/api/sourcing/$id'
+    | '/api/upload/presigned'
     | '/app/orders/$id'
     | '/app/payments/$id'
     | '/app/payments/commissions'
@@ -333,6 +363,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/api/clients'
     | '/api/health'
     | '/api/sourcing'
     | '/app/agents'
@@ -349,7 +380,9 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/portal/$token'
     | '/app'
+    | '/api/clients/$id'
     | '/api/sourcing/$id'
+    | '/api/upload/presigned'
     | '/app/orders/$id'
     | '/app/payments/$id'
     | '/app/payments/commissions'
@@ -365,6 +398,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/api/clients'
     | '/api/health'
     | '/api/sourcing'
     | '/app/agents'
@@ -382,7 +416,9 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/portal/$token'
     | '/app/'
+    | '/api/clients/$id'
     | '/api/sourcing/$id'
+    | '/api/upload/presigned'
     | '/app/orders/$id'
     | '/app/payments/$id'
     | '/app/payments/commissions'
@@ -399,10 +435,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiClientsRoute: typeof ApiClientsRouteWithChildren
   ApiHealthRoute: typeof ApiHealthRoute
   ApiSourcingRoute: typeof ApiSourcingRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   PortalTokenRoute: typeof PortalTokenRoute
+  ApiUploadPresignedRoute: typeof ApiUploadPresignedRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -426,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/clients': {
+      id: '/api/clients'
+      path: '/api/clients'
+      fullPath: '/api/clients'
+      preLoaderRoute: typeof ApiClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -547,12 +592,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/clients/$id': {
+      id: '/api/clients/$id'
+      path: '/$id'
+      fullPath: '/api/clients/$id'
+      preLoaderRoute: typeof ApiClientsIdRouteImport
+      parentRoute: typeof ApiClientsRoute
+    }
     '/api/sourcing/$id': {
       id: '/api/sourcing/$id'
       path: '/$id'
       fullPath: '/api/sourcing/$id'
       preLoaderRoute: typeof ApiSourcingIdRouteImport
       parentRoute: typeof ApiSourcingRoute
+    }
+    '/api/upload/presigned': {
+      id: '/api/upload/presigned'
+      path: '/api/upload/presigned'
+      fullPath: '/api/upload/presigned'
+      preLoaderRoute: typeof ApiUploadPresignedRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/orders/': {
       id: '/app/orders/'
@@ -691,6 +750,18 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface ApiClientsRouteChildren {
+  ApiClientsIdRoute: typeof ApiClientsIdRoute
+}
+
+const ApiClientsRouteChildren: ApiClientsRouteChildren = {
+  ApiClientsIdRoute: ApiClientsIdRoute,
+}
+
+const ApiClientsRouteWithChildren = ApiClientsRoute._addFileChildren(
+  ApiClientsRouteChildren,
+)
+
 interface ApiSourcingRouteChildren {
   ApiSourcingIdRoute: typeof ApiSourcingIdRoute
 }
@@ -707,10 +778,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiClientsRoute: ApiClientsRouteWithChildren,
   ApiHealthRoute: ApiHealthRoute,
   ApiSourcingRoute: ApiSourcingRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   PortalTokenRoute: PortalTokenRoute,
+  ApiUploadPresignedRoute: ApiUploadPresignedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
